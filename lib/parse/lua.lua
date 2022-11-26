@@ -22,7 +22,7 @@ return function (file)
     end
 
     -- TEXT --
-    content = line:match '^%-%-|' and (line:match '^%-+|%s+(.*)' or '')
+    content = line:match '^%-%-|' and (line:match '^%-%-|%s(.*)' or '')
     if content then
       if type ~= 'text' then
         type, block = 'text', { content }

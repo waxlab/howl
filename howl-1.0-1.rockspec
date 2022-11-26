@@ -1,7 +1,9 @@
+rockspec_format = "3.0"
 package = "howl"
-version = "dev-1"
+version = "1.0-1"
 source = {
-  url = "https://codeberg.org/waxlab/howl"
+  url = "git+https://codeberg.org/waxlab/howl",
+  branch = 'v1.0'
 }
 
 description = {
@@ -12,9 +14,10 @@ description = {
 build = {
   type = "builtin",
   modules = {
-    ['howl.parse.md' ] = 'lib/parse/md.lua',
-    ['howl.parse.lua'] = 'lib/parse/lua.lua',
+    ['howl.parse.md' ]    = 'lib/parse/md.lua',
+    ['howl.parse.lua']    = 'lib/parse/lua.lua',
     ['howl.format.wiki' ] = 'lib/format/wiki.lua',
+    ['howl.format.vim']   = 'lib/format/vim.lua',
   },
   install = {
     bin = {
@@ -24,6 +27,6 @@ build = {
 }
 
 dependencies = {
-  "lua >= 5.2",
+  "lua >= 5.2, < 5.5",
   "wax"
 }

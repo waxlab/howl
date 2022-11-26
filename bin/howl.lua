@@ -34,7 +34,8 @@ local parser = {
 }
 
 local format = {
-  wiki = require 'howl.format.wiki'
+  wiki = require 'howl.format.wiki',
+  vim  = require 'howl.format.vim'
 }
 
 local -- functions --
@@ -96,26 +97,42 @@ read_file =
 -- Main execution --
 
 local cli = warg.parse()
+local conf = {
+  fmt  = assert_cli( cli.opt.fmt,  'Unspecified output format', USAGE),
+  from = assert_cli( cli.opt.from, 'Unspecified source dir',    USAGE),
+  to   = assert_cli( cli.arg[1],   'Unspecified target dir',    USAGE),
+  pfx  = cli.opt.pfx and cli.opt.pfx[1]
+}
 
-fmt     = assert_cli( cli.opt.fmt,   'Unspecified output format', USAGE)
-dir_in  = assert_cli( cli.opt['in'], 'Unspecified source dir',    USAGE)
-dir_out = assert_cli( cli.arg[1],    'Unspecified target dir',    USAGE)
 
 
-if not waxfs.isdir(dir_out) then
-  assert(waxfs.mkdirs(dir_out,'0755'))
+if not waxfs.isdir(conf.to) then
+  assert(waxfs.mkdirs(conf.to,'0755'))
 end
-dir_out = waxfs.realpath(dir_out)
+conf.to = waxfs.realpath(conf.to)
 
 
 local doctree = {manual = {}, api={}}
-for _, dir in ipairs(dir_in) do
+for _, dir in ipairs(conf.from) do
   assert(waxfs.isdir(dir), dir)
   dir = waxfs.realpath(dir)
   read_dir(dir, doctree, dir)
 end
 
-for _,f in ipairs(fmt) do
-  format[f](dir_out, doctree)
+if not conf.pfx then
+  if doctree.api[1].name then
+    conf.pfx = doctree.api[1].name:match('^(%w+)')
+  end
+
+  if not conf.pfx then
+    print('no suitable name for documentation found')
+    print('you can specify one via the --pfx option')
+    return
+  end
+end
+
+
+for _,f in ipairs(conf.fmt) do
+  format[f](conf, doctree)
 end
 

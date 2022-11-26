@@ -15,14 +15,8 @@ local function genindex(doctree)
     local sep = false
     local name = tokenize(file.name)
     for _, b in ipairs(file) do
-      if b.type == 'head' then
-        if not sep then
-          lvl = b.level
-          idx[#idx+1] = f_idxurl:format( ('  '):rep(lvl), b[1], name )
-          sep = true
-        end
-      elseif b.type == 'sign' then
-        idx[#idx+1] = f_sigurl:format( ('  '):rep(lvl+1), b.name, name, tokenize(b.name ))
+      if b.type == 'head' and b.level == 1 then
+        idx[#idx+1] = f_idxurl:format( ('  '):rep(b.level-1), b[1], name )
       end
     end
   end
@@ -58,35 +52,29 @@ function block.head (head)
 end
 
 
-return function(dir, doctree)
-  assert(waxfs.mkdirs(dir,'0755'))
+return function(conf, doctree)
+  assert(waxfs.mkdirs(conf.to,'0755'))
 
-  for f, file in ipairs(doctree.api) do
-    local fh = io.open(('%s/%s.md'):format(dir, tokenize(file.name)), 'w+')
-    local doc = { name = file.name }
-    for _, b in ipairs(file) do
-      b = block[b.type](b)
-      fh:write(b)
+  for _, tree in ipairs { 'manual', 'api' } do
+    for f, file in ipairs(doctree[tree]) do
+      local fh = io.open(('%s/%s.md'):format(conf.to, tokenize(file.name)), 'w+')
+      local doc = { name = file.name }
+      for _, b in ipairs(file) do
+        b = block[b.type](b)
+        fh:write(b)
+      end
+      fh:close()
     end
-    fh:close()
-  end
-  for f, file in ipairs(doctree.manual) do
-    local fh = io.open(('%s/%s.md'):format(dir, tokenize(file.name)), 'w+')
-    local doc = { name = file.name }
-    for _, b in ipairs(file) do
-      b = block[b.type](b)
-      fh:write(b)
-    end
-    fh:close()
   end
 
   local manual_index = genindex(doctree.manual)
   local api_index = genindex(doctree.api)
-  fh = io.open(('%s/%s.md'):format(dir, '_Sidebar'), 'w+')
-  fh:write( manual_index )
+  fh = io.open(('%s/%s.md'):format(conf.to, '_Sidebar'), 'w+')
+  fh:write('- [Home](Home)\n\n--------\n\n')
+  fh:write( api_index )
   fh:close()
 
-  fh = io.open(('%s/%s.md'):format(dir, 'Home'), 'w+')
+  fh = io.open(('%s/%s.md'):format(conf.to, 'Home'), 'w+')
   fh:write( manual_index )
   fh:write( '\n\n# Api\n\n' )
   fh:write( api_index )
