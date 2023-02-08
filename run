@@ -1,0 +1,28 @@
+#!/usr/bin/env lua
+
+local action = {}
+
+function action.build()
+  os.execute [[
+    sudo luarocks remove --lua-version 5.4 howl > /dev/null
+    sudo luarocks make --lua-version 5.4 howl-*.rockspec
+  ]]
+  return 0
+end
+
+function action.test()
+  local fs = require 'wax.fs'
+  for test in fs.glob('test/*.lua') do
+    print('--------- '..test)
+    loadfile(test)()
+  end
+end
+
+function action.help()
+  print [[Usage: ./run <action> where action is one of these:]]
+  print [[]]
+  for k,v in pairs(action) do print('  '..k) end
+  return 0
+end
+
+os.exit((action[arg[1]] or action.help)())

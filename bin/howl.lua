@@ -1,3 +1,6 @@
+--| # howl
+--| Command line tool for reading Howl Lua documentations
+
 local USAGE = [[
 
 Usage:

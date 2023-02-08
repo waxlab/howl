@@ -3,6 +3,12 @@ return function (file)
   local fh = io.open(file, 'r')
   local line = fh:read()
 
+  local p_head = '^(#+)%s+(.*)'
+  local p_sign = '^%$%s+`(([%w%.]+).*)`$'
+  local p_cini = '^```(%w+)'
+  local p_cend = '^```'
+
+
   while line do
     local lvl, title = line:match('^(#+)%s+(.*)$')
     if not lvl then
